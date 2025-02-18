@@ -1,0 +1,78 @@
+.sidebar-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 100vh;
+  background-color: var(--block-bg);
+  color: var(--block-text);
+  overflow: hidden;
+  transition: width 0.3s ease;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.3);
+  z-index: 1999;
+  padding: 1rem 0;
+  box-sizing: border-box;
+}
+
+.sidebar-menu.open {
+  width: 320px;
+}
+
+.sidebar-menu h2 {
+  margin: 0 1rem 1.5rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.sidebar-menu button {
+  display: block;
+  margin: 0.5rem 1rem;
+  padding: 0.6rem;
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
+}
+
+.sidebar-menu button:hover {
+  background: var(--accent-color-hover);
+}
+
+.close-button {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  background: transparent;
+  font-size: 1.8rem;
+  border: none;
+  color: var(--block-text);
+  cursor: pointer;
+}
+
+.add-form-wrapper {
+  margin: 1rem;
+  padding: 0.6rem;
+  background-color: var(--bg);
+  border-radius: 15px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.sidebar-menu h4 {
+  margin: 1.2rem 1rem 0.5rem;
+  font-size: 1rem;
+}
+
+.sidebar-menu select {
+  margin: 0 1rem 0.5rem;
+  width: calc(100% - 2rem);
+  padding: 0.4rem;
+  background: var(--block-bg);
+  color: var(--block-text);
+  border: 1px solid #666;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}

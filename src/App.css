@@ -1,0 +1,89 @@
+:root {
+  --bg: #fafafa;
+  --text: #333333;
+  --block-bg: #ffffff;
+  --block-text: #333333;
+  --modal-bg: rgba(0, 0, 0, 0.5);
+  --accent-color: #4b8bf4; 
+  --accent-color-hover: #407ad8; 
+}
+
+.dark {
+  --bg: #16171b;
+  --text: #ffffff;
+  --block-bg: #26272b;
+  --block-text: #ffffff;
+  --modal-bg: rgba(255, 255, 255, 0.2);
+  --accent-color: #598dff; 
+  --accent-color-hover: #4b7be0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.App {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  position: relative;
+}
+
+/* Ссылка/кнопка Меню */
+.menu-button {
+  position: fixed;
+  top: 1.2rem;
+  right: 1.2rem;
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  font-size: 1.25rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: background-color 0.2s ease;
+}
+
+.menu-button:hover {
+  background: var(--accent-color-hover);
+}
+
+.links-section {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  overflow-y: visible;
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Скролл для links-section (горизонтальный) */
+.links-section::-webkit-scrollbar {
+  height: 8px;
+}
+.links-section::-webkit-scrollbar-track {
+  background: #cccccc33;
+}
+.links-section::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+
+.widgets-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}

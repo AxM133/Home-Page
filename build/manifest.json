@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+  "name": "Custom New Tab Extension",
+  "version": "1.0",
+  "description": "Кастомная домашняя страница для быстрого доступа к любимым сайтам и виджетам.",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "storage",
+    "geolocation"
+  ],
+  "icons": {
+    "16": "new_page_64.png",
+    "48": "new_page_48.png",
+    "128": "new_page_128.png"
+  }
+}

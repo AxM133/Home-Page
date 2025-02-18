@@ -1,0 +1,157 @@
+.weather-widget {
+  width: 220px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.weather-widget p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.weather-city {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.weather-temp {
+  font-size: 1.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.weather-desc {
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+
+.weather-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--modal-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.dark-overlay {
+  background-color: var(--modal-bg);
+}
+
+.weather-modal-content {
+  background-color: var(--block-bg);
+  color: var(--block-text);
+  width: 340px;
+  min-height: 320px;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+}
+
+.weather-modal-close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.weather-modal-title {
+  text-align: center;
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.weather-today {
+  text-align: center;
+}
+
+.weather-today .wt-city {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.weather-today .wt-temp {
+  font-size: 1.4rem;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+.weather-today .wt-desc {
+  font-size: 1rem;
+  text-transform: capitalize;
+  color: #777;
+}
+
+.weather-city-form {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.weather-city-form input {
+  flex: 1;
+  padding: 0.4rem;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.weather-city-form button {
+  background: var(--accent-color);
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.weather-city-form button:hover {
+  background: var(--accent-color-hover);
+}
+
+.weather-forecast {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.weather-forecast-day {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wf-dayName {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.wf-temps {
+  font-size: 0.9rem;
+}
+
+.wf-min,
+.wf-max {
+  font-weight: 500;
+}
