@@ -8,7 +8,7 @@ function WeatherWidget({ theme }) {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cityInput, setCityInput] = useState('');
-  const API_KEY = '4cc9911b0a2723050929b73c2a59e727';
+  const API_KEY = process.env.REACT_APP_OWM_KEY;
 
   useEffect(() => {
     const storedCity = localStorage.getItem('weatherCity') || '';
