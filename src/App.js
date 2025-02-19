@@ -182,9 +182,15 @@ function App() {
 
   return (
     <div className={`App ${theme}`}>
-      <button className="menu-button" onClick={handleMenuToggle}>
-        ☰
-      </button>
+
+      <div>
+        <input type="checkbox" id="checkbox" className='menu-btn' onClick={handleMenuToggle}/>
+        <label htmlFor="checkbox" className="toggle">
+          <div className="bars" id="bar1" />
+          <div className="bars" id="bar2" />
+          <div className="bars" id="bar3" />
+        </label>
+      </div>
 
       <SidebarMenu
         isOpen={isMenuOpen}

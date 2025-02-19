@@ -11,8 +11,8 @@
     "geolocation"
   ],
   "icons": {
-    "16": "new_page_64.png",
-    "48": "new_page_48.png",
-    "128": "new_page_128.png"
+    "16": "logo_64x64.png",
+    "48": "logo_48x48.png",
+    "128": "logo_128x128.png"
   }
 }

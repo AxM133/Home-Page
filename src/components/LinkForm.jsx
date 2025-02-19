@@ -19,7 +19,9 @@ function LinkForm({ onAddLink }) {
   const fetchWithTimeout = (checkUrl, options, timeout = 3000) => {
     return Promise.race([
       fetch(checkUrl, options),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeout))
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), timeout)
+      ),
     ]);
   };
 
@@ -51,7 +53,7 @@ function LinkForm({ onAddLink }) {
         url,
         customIcon: iconBase64 || '',
         category: category.trim(),
-        createdAt: Date.now()
+        createdAt: Date.now(),
       });
       setTitle('');
       setUrl('');

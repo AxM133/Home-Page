@@ -22,10 +22,6 @@ function SidebarMenu({
 
   return (
     <div className={`sidebar-menu ${isOpen ? 'open' : ''}`}>
-      <button className="close-button" onClick={onClose}>
-        &times;
-      </button>
-      <h2>Меню</h2>
 
       <button onClick={handleAddBlockClick}>Добавить блок</button>
       {showForm && (
@@ -34,7 +30,6 @@ function SidebarMenu({
         </div>
       )}
 
-      <button onClick={toggleTheme}>Смена темы</button>
       <button onClick={toggleRemoveMode}>Изменение блока</button>
 
       <h4>Сортировка</h4>
@@ -55,6 +50,12 @@ function SidebarMenu({
           </option>
         ))}
       </select>
+
+      {/* Переключатель темы (switch) в самом нижнем правом углу */}
+      <label className="switch theme-switch">
+        <input onClick={toggleTheme} type="checkbox" />
+        <span className="slider" />
+      </label>
     </div>
   );
 }

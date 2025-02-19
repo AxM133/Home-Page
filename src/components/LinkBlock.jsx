@@ -46,7 +46,7 @@ function LinkBlock({
             onError={handleImgError}
           />
         </div>
-        {/* Всплывающий текст над блоком, при hover */}
+        {/* Всплывающий текст над блоком при hover */}
         <div className="tooltip">{title}</div>
       </a>
 
