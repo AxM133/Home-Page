@@ -52,6 +52,7 @@ function LinkBlock({
 
       {isRemoveMode && (
         <>
+          {/* Местами поменяли: теперь remove идёт первым, edit вторым */}
           <button className="remove-block-btn" onClick={onRemove}>
             -
           </button>

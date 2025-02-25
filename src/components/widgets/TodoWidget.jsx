@@ -11,9 +11,9 @@ function TodoWidget({ theme }) {
   const [priority, setPriority] = useState('low');
   const [deadline, setDeadline] = useState('');
 
-  // Фильтр и сортировка
-  const [filter, setFilter] = useState('all');     // 'all' | 'done' | 'open'
-  const [sortTaskBy, setSortTaskBy] = useState('created'); // 'created' | 'priority' | 'deadline'
+  // Фильтрация и сортировка
+  const [filter, setFilter] = useState('all');     
+  const [sortTaskBy, setSortTaskBy] = useState('created'); 
 
   // Скрытый input type="date"
   const dateInputRef = useRef(null);
@@ -29,21 +29,22 @@ function TodoWidget({ theme }) {
     localStorage.setItem('advancedTodoTasks', JSON.stringify(tasks));
   }, [tasks]);
 
-  // Автоудаление задач, которые выполнены более 24 часов назад
+  // Удаляем задачи, которые выполнены дольше 24 часов
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       setTasks(prev =>
-        prev.filter(task => {
-          if (!task.completed) return true;
-          if (!task.completedAt) return true;
-          return now - task.completedAt < 24 * 60 * 60 * 1000;
+        prev.filter(t => {
+          if (!t.completed) return true;
+          if (!t.completedAt) return true;
+          return now - t.completedAt < 24 * 60 * 60 * 1000;
         })
       );
     }, 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
+  // Открыть / закрыть модальное окно
   const openModal = () => setIsModalOpen(true);
   const closeModal = (e) => {
     e.stopPropagation();
@@ -54,7 +55,7 @@ function TodoWidget({ theme }) {
     openModal();
   };
 
-  // При добавлении задачи
+  // Добавить задачу
   const handleAddTask = () => {
     if (titleInput.trim() === '') return;
     const newTask = {
@@ -64,7 +65,7 @@ function TodoWidget({ theme }) {
       deadline,
       completed: false,
       completedAt: null,
-      createdAt: Date.now(),
+      createdAt: Date.now()
     };
     setTasks(prev => [...prev, newTask]);
     setTitleInput('');
@@ -72,7 +73,7 @@ function TodoWidget({ theme }) {
     setDeadline('');
   };
 
-  // Переключение выполнения
+  // Отметить задачу выполненной / невыполненной
   const toggleTask = (id) => {
     setTasks(prev =>
       prev.map(task => {
@@ -93,27 +94,33 @@ function TodoWidget({ theme }) {
     setTasks(prev => prev.filter(task => task.id !== id));
   };
 
-  // Приоритет: кликами по кнопке (low -> medium -> high -> low)
+  // Переключать приоритет (low -> medium -> high -> ...)
   const cyclePriority = () => {
     if (priority === 'low') setPriority('medium');
     else if (priority === 'medium') setPriority('high');
     else setPriority('low');
   };
 
-  // Нажатие на иконку календаря – открываем date
-  const handleOpenDate = () => {
-    if (dateInputRef.current) {
+  // Нажимаем на иконку календаря — открываем <input type="date" />
+  const handleOpenDate = (e) => {
+    e.preventDefault();
+    // Если браузер поддерживает showPicker (Chrome), используем его
+    if (dateInputRef.current && dateInputRef.current.showPicker) {
+      dateInputRef.current.showPicker();
+    } else if (dateInputRef.current) {
+      // Фолбек: просто клик
       dateInputRef.current.click();
     }
   };
 
-  // Фильтрация и сортировка
+  // Фильтрация
   const filteredTasks = tasks.filter((task) => {
     if (filter === 'done') return task.completed;
     if (filter === 'open') return !task.completed;
     return true;
   });
 
+  // Сортировка
   const sortedTasks = [...filteredTasks];
   if (sortTaskBy === 'priority') {
     const priorityOrder = { high: 3, medium: 2, low: 1 };
@@ -128,36 +135,44 @@ function TodoWidget({ theme }) {
       return new Date(a.deadline) - new Date(b.deadline);
     });
   } else {
-    // 'created'
+    // 'created' => по времени создания, новые вниз
     sortedTasks.sort((a, b) => a.createdAt - b.createdAt);
   }
 
-  // Показываем первые 2 задачи в mini-версии виджета
-  const firstTwoTasks = sortedTasks.slice(0, 2);
+  // В мини-виджете (250 x 120) показываем только одну задачу
+  const firstTask = sortedTasks[0];
 
   return (
     <>
+      {/* Мини-виджет */}
       <div className="todo-widget widget" onClick={handleWidgetClick}>
-        <div className="todo-small-title">СПИСОК ДЕЛ</div>
-        <ul className="todo-small-list">
-          {firstTwoTasks.map(task => (
-            <li key={task.id} className={task.completed ? 'completed' : ''}>
-              {task.title}
-            </li>
-          ))}
-        </ul>
+        { firstTask ? (
+          <>
+            <div className="todo-small-title" title={firstTask.title}>
+              {/* Обрезаем если слишком длинно через CSS */}
+              {firstTask.title}
+            </div>
+            <div>
+              У вас {tasks.length} задач
+            </div>
+          </>
+        ) : (
+          <div className="todo-small-title">
+            Нет задач
+          </div>
+        )}
       </div>
 
+      {/* Модальное окно */}
       {isModalOpen && (
         <div className={`modal-overlay ${theme === 'dark' ? 'dark-overlay' : ''}`} onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-modal" onClick={closeModal}>
               ×
             </button>
-
             <h2 className="modal-title">Список дел</h2>
 
-            {/* Верхняя часть: input + "check" button справа */}
+            {/* Верхняя часть: текстовое поле и зелёная «галочка» */}
             <div className="top-row">
               <input
                 type="text"
@@ -166,14 +181,17 @@ function TodoWidget({ theme }) {
                 value={titleInput}
                 onChange={(e) => setTitleInput(e.target.value)}
               />
-              <button className="add-check-btn" onClick={handleAddTask} title="Добавить задачу">
+              <button
+                className="add-check-btn"
+                onClick={handleAddTask}
+                title="Добавить задачу"
+              >
                 +
               </button>
             </div>
 
-            {/* Вторая строка: Priority + Deadline */}
+            {/* Вторая строка: приоритет + дедлайн */}
             <div className="second-row">
-              {/* Кнопка приоритета (3 иконки флажка) */}
               <button
                 className={`priority-btn ${priority}`}
                 onClick={cyclePriority}
@@ -184,7 +202,6 @@ function TodoWidget({ theme }) {
                 {priority === 'high' && <FaFlag style={{ color: '#ff3d3d' }} />}
               </button>
 
-              {/* Кнопка дедлайна (открывает date) */}
               <button
                 className="deadline-btn"
                 onClick={handleOpenDate}
@@ -202,9 +219,12 @@ function TodoWidget({ theme }) {
               />
             </div>
 
+            {/* Кнопка на всю ширину (если нужно) */}
+            {/* <button className="add-task-btn full-width" onClick={handleAddTask}>Добавить задачу</button> */}
+
             <hr />
 
-            {/* Третья строка: фильтр и сортировка */}
+            {/* Фильтр и сортировка */}
             <div className="row-filters">
               <div>
                 <label>Фильтр: </label>
@@ -214,7 +234,6 @@ function TodoWidget({ theme }) {
                   <option value="open">Осталось</option>
                 </select>
               </div>
-
               <div>
                 <label>Сортировка: </label>
                 <select
@@ -228,14 +247,15 @@ function TodoWidget({ theme }) {
               </div>
             </div>
 
-            {/* Сами задачи */}
             <ul className="modal-todo-list">
               {sortedTasks.map((task) => (
                 <li key={task.id}>
+                  {/* Кнопка отметки слева */}
                   <div className="check-btn" onClick={() => toggleTask(task.id)}>
                     {task.completed ? '☑' : '☐'}
                   </div>
 
+                  {/* Основной блок задачи */}
                   <div className="task-content">
                     <div className={`task-title ${task.completed ? 'done' : ''}`}>
                       {task.title}
@@ -250,6 +270,7 @@ function TodoWidget({ theme }) {
                     </div>
                   </div>
 
+                  {/* Кнопка удаления справа */}
                   <button className="remove-todo" onClick={() => removeTask(task.id)}>
                     ×
                   </button>

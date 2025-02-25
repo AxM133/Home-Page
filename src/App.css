@@ -7,6 +7,7 @@
   --input-bg: #ffffff;
   --block-text: #333333;
   --modal-bg: rgba(0, 0, 0, 0.5);
+  --menu-btn: #719eff;
   --accent-color: #4b8bf4; 
   --accent-color-hover: #407ad8; 
 }
@@ -20,6 +21,7 @@
   --input-bg: #18191b;
   --block-text: #ffffff;
   --modal-bg: rgba(255, 255, 255, 0.2);
+  --menu-btn: #00afff;
   --accent-color: #598dff; 
   --accent-color-hover: #4b7be0;
 }
@@ -39,7 +41,7 @@ body {
 
 .App {
   min-height: 100vh;
-  padding: 2rem 1rem;
+  padding: 2rem 0rem;
   position: relative;
 }
 
@@ -50,7 +52,7 @@ body {
 .toggle {
   position: absolute;
   top: 1.2rem;
-  right: 1.2rem;
+  right: 97%;
   width: 30px;
   height: 30px;
   cursor: pointer;
@@ -108,10 +110,6 @@ body {
   transition-duration: .5s;
   transform: rotate(180deg);
 }
-
-
-
-
 
 /* Ссылка/кнопка Меню */
 .menu-button {

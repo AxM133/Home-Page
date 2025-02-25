@@ -1,22 +1,26 @@
 .todo-widget {
   background-color: var(--widget-bg);
-  width: 220px;
-  height: 130px;
+  width: 250px;
+  height: 120px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
   border-radius: 8px;
   padding: 0.5rem;
+  box-shadow: 0px 2px 14px 0px rgba(0,0,0,0.3);
 }
 
+/* Заголовок мини-виджета */
 .todo-small-title {
   font-size: 1.1rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
 }
 
+/* Список (если нужно в мини-виджете) */
 .todo-small-list {
   list-style: none;
   padding: 0;
@@ -25,6 +29,7 @@
   width: 100%;
 }
 
+/* Элементы списка в мини-виджете */
 .todo-small-list li {
   background: var(--task-bg);
   margin-bottom: 0.3rem;
@@ -32,12 +37,13 @@
   border-radius: 4px;
 }
 
+/* Задача, если выполнена */
 .todo-small-list li.completed {
   text-decoration: line-through;
   color: #999;
 }
 
-/* Модальное окно */
+/* ===== Модальное окно ===== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -48,19 +54,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 22222;
 }
 
 .dark-overlay {
   background-color: var(--modal-bg);
 }
 
-/* Увеличили ширину + высоту окна */
+/* Увеличенный размер контента внутри модалки */
 .modal-content {
   background-color: var(--block-bg);
   color: var(--block-text);
-  width: 450px; /* шире */
-  min-height: 400px; /* выше */
+  width: 450px;       /* шире */
+  min-height: 400px;  /* выше */
   border-radius: 8px;
   padding: 1rem;
   position: relative;
@@ -69,6 +75,7 @@
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
+/* Кнопка закрытия (x) */
 .close-modal {
   position: absolute;
   top: 0.7rem;
@@ -80,6 +87,7 @@
   color: var(--block-text);
 }
 
+/* Заголовок в модалке */
 .modal-title {
   text-align: center;
   font-size: 1.2rem;
@@ -87,7 +95,7 @@
   font-weight: bold;
 }
 
-/* Верхняя часть (input + зеленая кнопка справа) */
+/* Верхняя часть (input + «галочка» справа) */
 .top-row {
   display: flex;
   align-items: center;
@@ -95,6 +103,7 @@
   margin-bottom: 0.5rem;
 }
 
+/* Поле ввода задачи */
 .task-input {
   flex: 1;
   padding: 0.5rem;
@@ -106,26 +115,26 @@
   color: var(--text);
 }
 
-/* Зеленая кнопка-check */
+/* Зелёная кнопка «галочка» (добавить задачу) */
 .add-check-btn {
   width: 40px;
   display: flex;
   height: 40px;
   border: none;
   border-radius: 8px;
-  background-color: #4caf50;
+  background-color: var(--accent-color);
   color: #fff;
   font-size: 1.6rem;
   cursor: pointer;
   transition: background-color 0.2s;
-  align-items: stretch;
-  justify-content: space-evenly;
+  align-items: center;
+  justify-content: center;
 }
 .add-check-btn:hover {
-  background-color: #45a049;
+  background-color: var(--accent-color-hover);
 }
 
-/* Вторая строка (priority + date) */
+/* Вторая строка: приоритет + дедлайн */
 .second-row {
   display: flex;
   align-items: center;
@@ -167,7 +176,7 @@
   background-color: var(--bg);
 }
 
-/* (5) Одна строка: фильтр + сортировка */
+/* Строка фильтра и сортировки */
 .row-filters {
   display: flex;
   align-items: center;
@@ -189,12 +198,12 @@
   font-size: 0.9rem;
 }
 
-/* Кнопка добавления задачи на всю ширину (если нужно) */
+/* Кнопка «Добавить задачу» на всю ширину, если нужно */
 .full-width {
   width: 100%;
 }
 
-/* Список задач */
+/* Список задач в модалке */
 .modal-todo-list {
   list-style: none;
   margin: 0;
@@ -213,6 +222,7 @@
   position: relative;
 }
 
+/* Кнопка чекбокса слева */
 .check-btn {
   margin-right: 0.5rem;
   font-size: 1.2rem;
@@ -221,6 +231,7 @@
   width: 26px;
 }
 
+/* Основной блок контента задачи */
 .task-content {
   display: flex;
   flex-direction: column;
@@ -228,23 +239,27 @@
   flex: 1;
 }
 
+/* Заголовок задачи */
 .task-title {
   font-size: 1rem;
   font-weight: bold;
   text-transform: uppercase;
 }
 
+/* Выполненная задача */
 .task-title.done {
   text-decoration: line-through;
   color: #999;
 }
 
+/* Метаданные задачи (приоритет, дедлайн) */
 .task-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+/* Приоритет (низкий/средний/высокий) */
 .task-priority {
   font-size: 0.75rem;
   margin-top: 2px;
@@ -266,12 +281,14 @@
   color: #333;
 }
 
+/* Дедлайн задачи */
 .task-deadline {
   font-size: 0.75rem;
   color: #666;
   margin-left: 4px;
 }
 
+/* Кнопка удаления задачи */
 .remove-todo {
   background: #ff4d4d;
   color: #fff;

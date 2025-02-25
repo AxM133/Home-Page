@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LinkForm from './LinkForm';
 import './SidebarMenu.css';
 
@@ -6,7 +6,7 @@ function SidebarMenu({
   isOpen,
   onClose,
   onAddLink,
-  toggleTheme,
+  toggleTheme,      // функция из родителя, переключающая саму тему
   toggleRemoveMode,
   sortBy,
   setSortBy,
@@ -15,6 +15,31 @@ function SidebarMenu({
   allCategories
 }) {
   const [showForm, setShowForm] = useState(false);
+  const [isDarkChecked, setIsDarkChecked] = useState(false);
+
+  useEffect(() => {
+    // Считываем сохранённое состояние "isDark" из localStorage
+    const storedIsDark = localStorage.getItem('isDark');
+    // если в localStorage нет, оставим false
+    if (storedIsDark === 'true') {
+      setIsDarkChecked(true);
+    } else {
+      setIsDarkChecked(false);
+    }
+  }, []);
+
+  // При изменении переключателя
+  const handleThemeSwitch = (e) => {
+    const checked = e.target.checked;
+    setIsDarkChecked(checked);
+
+    // Сохраняем в localStorage
+    localStorage.setItem('isDark', checked ? 'true' : 'false');
+
+    // Вызываем родительский toggleTheme, 
+    // который действительно переключает тему (dark <-> light)
+    toggleTheme();
+  };
 
   const handleAddBlockClick = () => {
     setShowForm((prev) => !prev);
@@ -22,7 +47,7 @@ function SidebarMenu({
 
   return (
     <div className={`sidebar-menu ${isOpen ? 'open' : ''}`}>
-
+      <h2>Меню</h2>
       <button onClick={handleAddBlockClick}>Добавить блок</button>
       {showForm && (
         <div className="add-form-wrapper">
@@ -51,9 +76,14 @@ function SidebarMenu({
         ))}
       </select>
 
-      {/* Переключатель темы (switch) в самом нижнем правом углу */}
+      {/* Переключатель темы (switch) внизу справа, 
+          но теперь он сохраняет чек и при перезапуске страницы */}
       <label className="switch theme-switch">
-        <input onClick={toggleTheme} type="checkbox" />
+        <input 
+          type="checkbox"
+          checked={isDarkChecked}
+          onChange={handleThemeSwitch}
+        />
         <span className="slider" />
       </label>
     </div>
