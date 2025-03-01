@@ -5,7 +5,7 @@ function LinkForm({ onAddLink }) {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [iconBase64, setIconBase64] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('favorite'); // по умолчанию в избранное?
 
   const isValidUrl = (value) => {
     try {
@@ -53,12 +53,12 @@ function LinkForm({ onAddLink }) {
         url,
         customIcon: iconBase64 || '',
         category: category.trim(),
-        createdAt: Date.now(),
+        createdAt: Date.now()
       });
       setTitle('');
       setUrl('');
       setIconBase64('');
-      setCategory('');
+      setCategory('favorite');
       e.target.reset();
     } catch {
       alert('Сайт не найден или недоступен');
@@ -77,7 +77,7 @@ function LinkForm({ onAddLink }) {
 
       <input
         type="url"
-        placeholder="URL сайта (например, https://example.com)"
+        placeholder="URL сайта (https://...)"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         required
@@ -87,7 +87,7 @@ function LinkForm({ onAddLink }) {
 
       <input
         type="text"
-        placeholder="Категория (например, Работа, Игры)"
+        placeholder="Категория (например: favorite, Рабочие...)"
         value={category}
         onChange={(e) => setCategory(e.target.value)}
       />

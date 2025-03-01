@@ -161,3 +161,51 @@ body {
   justify-content: center;
   gap: 2rem;
 }
+
+
+.favorites-row {
+  display: flex;
+  background: var(--bg);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.favorites-links {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.categories-grid {
+  display: flex;
+  gap: 1rem;
+  padding: 0 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Каждая категория имеет какой-то фиксированный или минимальный width,
+   чтобы поместилось 3 блока по ширине */
+.category-section {
+  display: inline-block;
+  border-right: 1px solid #ccc;
+  padding-right: 1rem;
+  /* ширину можно подобрать, например, 300px (3 блока по ~80px + отступы) */
+  width: 300px;
+}
+
+.category-section:last-child {
+  border-right: none;
+}
+
+.category-links {
+  margin-top: 0.5rem;
+  /* Три колонки => repeat(3, ...) */
+  display: grid;
+  grid-template-columns: repeat(3, 90px); 
+  /* или repeat(3, minmax(0, 1fr)) если вы хотите, чтобы колонки растягивались */
+  gap: 0.5rem;
+  /* Если нужно, можно добавить max-height / overflow-y, чтобы прокручивалось */
+}

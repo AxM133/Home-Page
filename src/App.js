@@ -1,11 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+
 import LinkBlock from './components/LinkBlock';
 import SidebarMenu from './components/SidebarMenu';
 import WeatherWidget from './components/WeatherWidget';
 import ClockWidget from './components/ClockWidget';
 import TodoWidget from './components/widgets/TodoWidget';
+
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+
+// Функция для группировки массива по значению (например, по category)
+function groupBy(array, keyFn) {
+  const result = {};
+  array.forEach((item) => {
+    const key = keyFn(item);
+    if (!result[key]) {
+      result[key] = [];
+    }
+    result[key].push(item);
+  });
+  return result;
+}
 
 function App() {
   const [theme, setTheme] = useState('light');
@@ -15,8 +30,10 @@ function App() {
   const [sortBy, setSortBy] = useState('manual');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [editIndex, setEditIndex] = useState(null);
+
   const fileInputRef = useRef(null);
 
+  // Считываем тему и ссылки из localStorage при загрузке
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme) {
@@ -27,12 +44,13 @@ function App() {
     if (storedLinks) {
       setLinks(JSON.parse(storedLinks));
     } else {
+      // Пример начального массива ссылок
       setLinks([
         {
           title: 'Google',
           url: 'https://www.google.com',
           customIcon: '',
-          category: '',
+          category: 'favorite', // По умолчанию, избранное
           createdAt: Date.now(),
         },
         {
@@ -46,20 +64,23 @@ function App() {
     }
   }, []);
 
+  // Сохраняем тему
   useEffect(() => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // Сохраняем массив ссылок
   useEffect(() => {
     localStorage.setItem('userLinks', JSON.stringify(links));
   }, [links]);
 
+  // Навешиваем класс .light / .dark на html
   useEffect(() => {
-    // При изменении theme - снимаем оба класса и вешаем текущий
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
   }, [theme]);
 
+  // ==== Функции ====
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
@@ -111,6 +132,7 @@ function App() {
     reader.readAsDataURL(file);
   };
 
+  // ==== Фильтрация и сортировка ====
   const filteredLinks =
     selectedCategory === 'All'
       ? links
@@ -124,10 +146,14 @@ function App() {
   } else if (sortBy === 'date') {
     sortedLinks.sort((a, b) => b.createdAt - a.createdAt);
   }
+  // manual => используется Drag & Drop
 
+  // ==== Drag & Drop ====
   const onDragEnd = (result) => {
     if (!result.destination) return;
     if (sortBy !== 'manual') return;
+    // Чтобы Drag & Drop работал корректно, 
+    // мы проверяем, надо ли переставлять
     if (selectedCategory !== 'All') return;
 
     const fromIndex = result.source.index;
@@ -145,13 +171,26 @@ function App() {
     setLinks(newLinks);
   };
 
-  const renderLinks = () => {
-    return sortedLinks.map((link, index) => (
+  // ==== Разделяем ссылки на избранные (favorite) и прочие ====
+  const favoriteLinks = sortedLinks.filter((l) => l.category === 'favorite');
+  const otherLinks = sortedLinks.filter((l) => l.category !== 'favorite');
+
+  // Группируем прочие по category (если category === '' => "Без категории")
+  const grouped = groupBy(otherLinks, (link) => link.category || 'Без категории');
+  // превращаем в массив [{ name, items }, ...]
+  const groupedCategories = Object.keys(grouped).map((catName) => ({
+    name: catName,
+    items: grouped[catName],
+  }));
+
+  // ==== Рендер избранных ====
+  const renderFavoriteLinks = () => {
+    return favoriteLinks.map((link, index) => (
       <Draggable
-        key={index}
-        draggableId={`link-${index}`}
+        key={`fav-${index}`}
+        draggableId={`fav-drag-${index}`}
         index={index}
-        isDragDisabled={sortBy !== 'manual' || selectedCategory !== 'All'}
+        isDragDisabled={sortBy !== 'manual'}
       >
         {(provided) => (
           <div
@@ -161,13 +200,18 @@ function App() {
             style={provided.draggableProps.style}
           >
             <LinkBlock
-              key={index}
               title={link.title}
               url={link.url}
               customIcon={link.customIcon}
               isRemoveMode={isRemoveMode}
-              onRemove={() => handleRemoveLink(index)}
-              onEdit={() => handleEditLink(index)}
+              onRemove={() => {
+                const globalIndex = links.indexOf(link);
+                if (globalIndex >= 0) handleRemoveLink(globalIndex);
+              }}
+              onEdit={() => {
+                const globalIndex = links.indexOf(link);
+                if (globalIndex >= 0) handleEditLink(globalIndex);
+              }}
             />
           </div>
         )}
@@ -175,6 +219,35 @@ function App() {
     ));
   };
 
+  // ==== Рендер категорий ====
+  const renderCategories = () => {
+    return groupedCategories.map((catBlock) => (
+      <div key={catBlock.name} className="category-section">
+        <h3>{catBlock.name}</h3>
+        <div className="category-links">
+          {catBlock.items.map((link, index) => (
+            <LinkBlock
+              key={`cat-${catBlock.name}-${index}`}
+              title={link.title}
+              url={link.url}
+              customIcon={link.customIcon}
+              isRemoveMode={isRemoveMode}
+              onRemove={() => {
+                const globalIndex = links.indexOf(link);
+                if (globalIndex >= 0) handleRemoveLink(globalIndex);
+              }}
+              onEdit={() => {
+                const globalIndex = links.indexOf(link);
+                if (globalIndex >= 0) handleEditLink(globalIndex);
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    ));
+  };
+
+  // Определяем список категорий для Sidebar'а
   const categories = [
     'All',
     ...new Set(links.map((l) => l.category).filter(Boolean)),
@@ -183,8 +256,14 @@ function App() {
   return (
     <div className={`App ${theme}`}>
 
+      {/* Кнопка-гамбургер (checkbox) */}
       <div>
-        <input type="checkbox" id="checkbox" className='menu-btn' onClick={handleMenuToggle}/>
+        <input
+          type="checkbox"
+          id="checkbox"
+          className="menu-btn"
+          onClick={handleMenuToggle}
+        />
         <label htmlFor="checkbox" className="toggle">
           <div className="bars" id="bar1" />
           <div className="bars" id="bar2" />
@@ -192,6 +271,7 @@ function App() {
         </label>
       </div>
 
+      {/* Sidebar */}
       <SidebarMenu
         isOpen={isMenuOpen}
         onClose={handleMenuToggle}
@@ -205,6 +285,7 @@ function App() {
         allCategories={categories}
       />
 
+      {/* input для редактирования иконки */}
       <input
         type="file"
         ref={fileInputRef}
@@ -214,19 +295,31 @@ function App() {
       />
 
       <main>
+        {/* Drag & Drop */}
         <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="links-droppable" direction="horizontal">
+
+          {/* Избранные */}
+          <Droppable droppableId="favorites-droppable" direction="horizontal">
             {(provided) => (
               <section
-                className="links-section"
-                ref={provided.innerRef}
-                {...provided.droppableProps}
+              className="favorites-row"
+              ref={provided.innerRef}
+              {...provided.droppableProps}
               >
-                {renderLinks()}
-                {provided.placeholder}
+                <h2>Избранные</h2>
+                <div className="favorites-links">
+                  {renderFavoriteLinks()}
+                  {provided.placeholder}
+                </div>
               </section>
             )}
           </Droppable>
+
+          {/* Основная секция — это уже не Droppable (можно сделать при желании) */}
+          <section className="categories-grid">
+            {renderCategories()}
+          </section>
+
         </DragDropContext>
 
         <section className="widgets-section">
