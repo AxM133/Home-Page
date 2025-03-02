@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { FiMoreHorizontal } from 'react-icons/fi';
 import './App.css';
 
 import LinkBlock from './components/LinkBlock';
@@ -6,7 +7,6 @@ import SidebarMenu from './components/SidebarMenu';
 import WeatherWidget from './components/WeatherWidget';
 import ClockWidget from './components/ClockWidget';
 import TodoWidget from './components/widgets/TodoWidget';
-
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 // Функция для группировки массива по значению (например, по category)
@@ -33,7 +33,9 @@ function App() {
 
   const fileInputRef = useRef(null);
 
-  // Считываем тему и ссылки из localStorage при загрузке
+  // Новое состояние: "folderOpenCat" - какая категория открыта в папке
+  const [folderOpenCat, setFolderOpenCat] = useState(null);
+
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme) {
@@ -44,13 +46,13 @@ function App() {
     if (storedLinks) {
       setLinks(JSON.parse(storedLinks));
     } else {
-      // Пример начального массива ссылок
+      // Пример начальных ссылок
       setLinks([
         {
           title: 'Google',
           url: 'https://www.google.com',
           customIcon: '',
-          category: 'favorite', // По умолчанию, избранное
+          category: 'favorite',
           createdAt: Date.now(),
         },
         {
@@ -64,23 +66,21 @@ function App() {
     }
   }, []);
 
-  // Сохраняем тему
   useEffect(() => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Сохраняем массив ссылок
   useEffect(() => {
     localStorage.setItem('userLinks', JSON.stringify(links));
   }, [links]);
 
-  // Навешиваем класс .light / .dark на html
+  // Навешиваем класс .light / .dark на <html>
   useEffect(() => {
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
   }, [theme]);
 
-  // ==== Функции ====
+  // ==== Ваши функции ====
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
@@ -146,14 +146,11 @@ function App() {
   } else if (sortBy === 'date') {
     sortedLinks.sort((a, b) => b.createdAt - a.createdAt);
   }
-  // manual => используется Drag & Drop
 
   // ==== Drag & Drop ====
   const onDragEnd = (result) => {
     if (!result.destination) return;
     if (sortBy !== 'manual') return;
-    // Чтобы Drag & Drop работал корректно, 
-    // мы проверяем, надо ли переставлять
     if (selectedCategory !== 'All') return;
 
     const fromIndex = result.source.index;
@@ -171,13 +168,12 @@ function App() {
     setLinks(newLinks);
   };
 
-  // ==== Разделяем ссылки на избранные (favorite) и прочие ====
+  // === Разделяем на избранные и прочие ===
   const favoriteLinks = sortedLinks.filter((l) => l.category === 'favorite');
   const otherLinks = sortedLinks.filter((l) => l.category !== 'favorite');
 
-  // Группируем прочие по category (если category === '' => "Без категории")
+  // Группируем прочие по category
   const grouped = groupBy(otherLinks, (link) => link.category || 'Без категории');
-  // превращаем в массив [{ name, items }, ...]
   const groupedCategories = Object.keys(grouped).map((catName) => ({
     name: catName,
     items: grouped[catName],
@@ -219,44 +215,66 @@ function App() {
     ));
   };
 
-  // ==== Рендер категорий ====
+  // ==== Рендер категорий (2×2, где 4-й блок => папка "More") ====
   const renderCategories = () => {
-    return groupedCategories.map((catBlock) => (
-      <div key={catBlock.name} className="category-section">
-        <h3>{catBlock.name}</h3>
-        <div className="category-links">
-          {catBlock.items.map((link, index) => (
-            <LinkBlock
-              key={`cat-${catBlock.name}-${index}`}
-              title={link.title}
-              url={link.url}
-              customIcon={link.customIcon}
-              isRemoveMode={isRemoveMode}
-              onRemove={() => {
-                const globalIndex = links.indexOf(link);
-                if (globalIndex >= 0) handleRemoveLink(globalIndex);
-              }}
-              onEdit={() => {
-                const globalIndex = links.indexOf(link);
-                if (globalIndex >= 0) handleEditLink(globalIndex);
-              }}
-            />
-          ))}
+    return groupedCategories.map((catBlock) => {
+      // Слайс первых 3 ссылок, 4-й блок => папка
+      const firstThree = catBlock.items.slice(0, 3);
+      const hasMore = catBlock.items.length > 3;
+
+      return (
+        <div key={catBlock.name} className="category-section">
+          <h3>{catBlock.name}</h3>
+          <div className="category-links">
+            {/* Рисуем первые 3 как обычно */}
+            {firstThree.map((link, idx) => (
+              <LinkBlock
+                key={`cat-${catBlock.name}-${idx}`}
+                title={link.title}
+                url={link.url}
+                customIcon={link.customIcon}
+                isRemoveMode={isRemoveMode}
+                onRemove={() => {
+                  const globalIndex = links.indexOf(link);
+                  if (globalIndex >= 0) handleRemoveLink(globalIndex);
+                }}
+                onEdit={() => {
+                  const globalIndex = links.indexOf(link);
+                  if (globalIndex >= 0) handleEditLink(globalIndex);
+                }}
+              />
+            ))}
+
+            {/* Если есть больше 3, показываем 4-м блоком "Folder" */}
+            {hasMore && (
+              <div
+                className="link-block-wrapper folder-block"
+                onClick={() => setFolderOpenCat(catBlock.name)}
+              >
+                {/* Блок с иконкой "More" */}
+                <div className="link-block folder-block-inner">
+                  <div className="icon-wrapper">
+                    <FiMoreHorizontal className="folder-more-icon" />
+                  </div>
+                  <div className="tooltip">Показать ещё</div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    ));
+      );
+    });
   };
 
-  // Определяем список категорий для Sidebar'а
-  const categories = [
-    'All',
-    ...new Set(links.map((l) => l.category).filter(Boolean)),
-  ];
+  // Модалка-папка, если кликнули на "More"
+  const openFolderItems = folderOpenCat
+    ? groupedCategories.find((cat) => cat.name === folderOpenCat)?.items
+    : null;
 
   return (
     <div className={`App ${theme}`}>
 
-      {/* Кнопка-гамбургер (checkbox) */}
+      {/* Гамбургер-меню (checkbox) */}
       <div>
         <input
           type="checkbox"
@@ -271,7 +289,6 @@ function App() {
         </label>
       </div>
 
-      {/* Sidebar */}
       <SidebarMenu
         isOpen={isMenuOpen}
         onClose={handleMenuToggle}
@@ -282,10 +299,9 @@ function App() {
         setSortBy={setSortBy}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
-        allCategories={categories}
+        allCategories={['All', ...new Set(links.map((l) => l.category).filter(Boolean))]}
       />
 
-      {/* input для редактирования иконки */}
       <input
         type="file"
         ref={fileInputRef}
@@ -297,14 +313,12 @@ function App() {
       <main>
         {/* Drag & Drop */}
         <DragDropContext onDragEnd={onDragEnd}>
-
-          {/* Избранные */}
           <Droppable droppableId="favorites-droppable" direction="horizontal">
             {(provided) => (
               <section
-              className="favorites-row"
-              ref={provided.innerRef}
-              {...provided.droppableProps}
+                className="favorites-row"
+                ref={provided.innerRef}
+                {...provided.droppableProps}
               >
                 <h2>Избранные</h2>
                 <div className="favorites-links">
@@ -314,13 +328,12 @@ function App() {
               </section>
             )}
           </Droppable>
-
-          {/* Основная секция — это уже не Droppable (можно сделать при желании) */}
-          <section className="categories-grid">
-            {renderCategories()}
-          </section>
-
         </DragDropContext>
+
+        {/* Сетка категорий по центру */}
+        <section className="categories-grid">
+          {renderCategories()}
+        </section>
 
         <section className="widgets-section">
           <WeatherWidget theme={theme} />
@@ -328,6 +341,37 @@ function App() {
           <TodoWidget theme={theme} />
         </section>
       </main>
+
+      {/* Модальное окно "папки" */}
+      {folderOpenCat && (
+        <div className="folder-modal-overlay" onClick={() => setFolderOpenCat(null)}>
+          <div className="folder-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="folder-close" onClick={() => setFolderOpenCat(null)}>
+              ×
+            </button>
+            <h2>Категория: {folderOpenCat}</h2>
+            <div className="folder-links">
+              {openFolderItems?.map((link, idx) => (
+                <LinkBlock
+                  key={`folder-${folderOpenCat}-${idx}`}
+                  title={link.title}
+                  url={link.url}
+                  customIcon={link.customIcon}
+                  isRemoveMode={isRemoveMode}
+                  onRemove={() => {
+                    const globalIndex = links.indexOf(link);
+                    if (globalIndex >= 0) handleRemoveLink(globalIndex);
+                  }}
+                  onEdit={() => {
+                    const globalIndex = links.indexOf(link);
+                    if (globalIndex >= 0) handleEditLink(globalIndex);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
