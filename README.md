@@ -13,7 +13,7 @@
 ## 🔧 Установка вручную (Developer Mode)
 ### 📥 **Скачать и установить**
 1. **Скачайте ZIP-архив** с расширением по ссылке:  
-   👉 [СКАЧАТЬ ZIP](https://drive.google.com/file/d/1RsPEk8w38t1yyL0mST_sOqJHIWzud3Ud/view?usp=sharing)
+   👉 [СКАЧАТЬ ZIP](https://drive.google.com/file/d/1-4Ba-bRha0JxxtfuBfoyasO-5xhE4pHw/view?usp=sharing)
    
 2. **Распакуйте архив** в любое удобное место.
 
