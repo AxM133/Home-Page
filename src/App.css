@@ -51,7 +51,6 @@ body {
 
 .toggle {
   position: absolute;
-  top: 1.2rem;
   right: 97%;
   width: 30px;
   height: 30px;
@@ -306,4 +305,104 @@ body {
 .sort-block h4,
 .category-block h4 {
   margin-bottom: 0.5rem;
+}
+
+.category-icon-button {
+  position: absolute;
+  right: 1rem;
+  display: inline-block;
+  background: var(--block-bg);
+  color: var(--block-text);
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 3000; /* над основным контентом */
+  text-align: center;
+  vertical-align: middle;
+  overflow: visible;
+  position: fixed; /* чтобы оставалась на одном месте при прокрутке */
+}
+  
+.category-icon-button:hover {
+  background: var(--accent-color-hover);
+}
+  
+/* Иконка внутри кнопки */
+.category-icon-button .cat-icon {
+  font-size: 1.4rem;
+  line-height: 44px;
+  display: inline-block;
+  pointer-events: none;
+}
+  
+/* Подсказка-тултип при наведении */
+.category-icon-button .cat-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  background: var(--block-bg);
+  color: var(--block-text);
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.2s, opacity 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+  
+.category-icon-button:hover .cat-tooltip {
+  transform: translateX(-50%) scale(1);
+  opacity: 1;
+}
+
+/* Контейнер со списком опций */
+.custom-cat-options {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--block-bg);
+  color: var(--block-text);
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  padding: 0.5rem;
+  width: 120px; /* подберите подходящий размер */
+  animation: catOptionsFadeIn 0.25s ease forwards;
+  transform-origin: top right;
+  z-index: 3100; 
+}
+  
+/* Небольшая анимация появления */
+@keyframes catOptionsFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+  
+/* Каждая опция */
+.cat-option {
+  padding: 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+  
+.cat-option:hover {
+  background-color: var(--accent-color-hover);
+  color: #fff;
+}
+  
+.cat-option.active {
+  font-weight: bold;
+  background-color: var(--accent-color);
+  color: #fff;
 }

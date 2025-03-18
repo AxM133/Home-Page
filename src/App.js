@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiMoreHorizontal } from 'react-icons/fi';
+import { FiMoreHorizontal, FiList } from 'react-icons/fi';
 import './App.css';
 
 import LinkBlock from './components/LinkBlock';
@@ -9,8 +9,8 @@ import ClockWidget from './components/ClockWidget';
 import TodoWidget from './components/widgets/TodoWidget';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
+// Стабильный порядок категорий
 function groupByStable(array, categoryOrder) {
-  // Сначала группируем ссылки по категории.
   const grouped = {};
   array.forEach((item) => {
     const cat = item.category || 'Без категории';
@@ -20,13 +20,12 @@ function groupByStable(array, categoryOrder) {
     grouped[cat].push(item);
   });
 
-  // Строим массив по порядку categoryOrder
-  const result = categoryOrder.map((catName) => {
-    const items = grouped[catName] || [];
-    return { name: catName, items };
-  });
+  const result = categoryOrder.map((catName) => ({
+    name: catName,
+    items: grouped[catName] || []
+  }));
 
-  // Если появились новые категории, которых нет в categoryOrder, добавим в конец
+  // Добавим те, которых нет в categoryOrder
   Object.keys(grouped).forEach((catName) => {
     if (!categoryOrder.includes(catName)) {
       result.push({ name: catName, items: grouped[catName] });
@@ -43,20 +42,20 @@ function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [sortBy, setSortBy] = useState('manual');
   const [selectedCategory, setSelectedCategory] = useState('All');
+
   const [editIndex, setEditIndex] = useState(null);
   const fileInputRef = useRef(null);
 
-  // «Папка» (модальное окно)
   const [folderOpenCat, setFolderOpenCat] = useState(null);
-
-  // Список категорий, чтобы они не перетасовывались
   const [categoryOrder, setCategoryOrder] = useState([]);
+
+  // Показывать ли список категорий (иконка-кнопка справа)
+  const [showCategoryOptions, setShowCategoryOptions] = useState(false);
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
-    if (storedTheme) {
-      setTheme(storedTheme);
-    }
+    if (storedTheme) setTheme(storedTheme);
+
     const storedLinks = localStorage.getItem('userLinks');
     if (storedLinks) {
       setLinks(JSON.parse(storedLinks));
@@ -93,21 +92,16 @@ function App() {
     document.documentElement.classList.add(theme);
   }, [theme]);
 
-  // При каждом изменении links — если появилась новая категория, добавим её в categoryOrder
+  // Заполняем categoryOrder
   useEffect(() => {
-    const allCats = links
+    const cats = links
       .filter((l) => l.category && l.category !== 'favorite')
       .map((l) => l.category);
-
-    // Уникальные
-    const uniqueCats = Array.from(new Set(allCats));
-    // Мержим с categoryOrder (добавляя только те, которых ещё нет)
+    const uniqueCats = [...new Set(cats)];
     setCategoryOrder((prev) => {
       const merged = [...prev];
-      uniqueCats.forEach((cat) => {
-        if (!merged.includes(cat)) {
-          merged.push(cat);
-        }
+      uniqueCats.forEach((c) => {
+        if (!merged.includes(c)) merged.push(c);
       });
       return merged;
     });
@@ -163,7 +157,7 @@ function App() {
     reader.readAsDataURL(file);
   };
 
-  // Фильтруем: либо все, либо favorite + категория
+  // Фильтруем + сортируем
   let filteredLinks;
   if (selectedCategory === 'All') {
     filteredLinks = links;
@@ -173,7 +167,6 @@ function App() {
     );
   }
 
-  // Сортируем блоки
   const sortedLinks = [...filteredLinks];
   if (sortBy === 'alphabetical') {
     sortedLinks.sort((a, b) =>
@@ -188,44 +181,39 @@ function App() {
     if (!result.destination) return;
     if (sortBy !== 'manual') return;
 
-    // Не даём перетаскивать между droppables
-
+    // Не даём перекидывать между droppables
+    if (result.source.droppableId !== result.destination.droppableId) return;
 
     if (result.source.droppableId === 'favorites-droppable') {
       reorderFavorites(result.source.index, result.destination.index);
     } else if (result.source.droppableId.startsWith('cat:')) {
-      reorderCategory(
-        result.source.droppableId.replace('cat:', ''),
-        result.source.index,
-        result.destination.index
-      );
+      const cat = result.source.droppableId.replace('cat:', '');
+      reorderCategory(cat, result.source.index, result.destination.index);
     }
   };
 
-  // Перестановка в "Избранные" (horizontal)
-  const reorderFavorites = (fromIndex, toIndex) => {
+  const reorderFavorites = (from, to) => {
     setLinks((prev) => {
-      const favLinks = prev.filter((l) => l.category === 'favorite');
-      if (fromIndex >= favLinks.length || toIndex >= favLinks.length) return prev;
-      const [removed] = favLinks.splice(fromIndex, 1);
-      favLinks.splice(toIndex, 0, removed);
+      const favorites = prev.filter((l) => l.category === 'favorite');
+      if (from >= favorites.length || to >= favorites.length) return prev;
+      const [removed] = favorites.splice(from, 1);
+      favorites.splice(to, 0, removed);
       const others = prev.filter((l) => l.category !== 'favorite');
-      return [...others, ...favLinks];
+      return [...others, ...favorites];
     });
   };
 
-  // Перестановка в одной категории
-  const reorderCategory = (catName, fromIndex, toIndex) => {
+  // Переставляем только первые 3 в категории
+  const reorderCategory = (catName, from, to) => {
     setLinks((prev) => {
       const newArr = [...prev];
       const catLinks = newArr.filter((l) => l.category === catName);
-      // Только первые 3 двигаем
       const firstThree = catLinks.slice(0, 3);
-      if (fromIndex >= firstThree.length || toIndex >= firstThree.length) {
-        return newArr;
-      }
-      const [removed] = firstThree.splice(fromIndex, 1);
-      firstThree.splice(toIndex, 0, removed);
+      if (from >= firstThree.length || to >= firstThree.length) return newArr;
+
+      const [removed] = firstThree.splice(from, 1);
+      firstThree.splice(to, 0, removed);
+
       const rest = catLinks.slice(3);
       const finalCat = [...firstThree, ...rest];
       const notCat = newArr.filter((l) => l.category !== catName);
@@ -233,49 +221,30 @@ function App() {
     });
   };
 
-  // Разделяем на favorite/other
+  // Разделяем favorite vs. others
   const favoriteLinks = sortedLinks.filter((l) => l.category === 'favorite');
   const otherLinks = sortedLinks.filter((l) => l.category !== 'favorite');
 
-  // Группируем по категории, но порядок — categoryOrder
+  // Группируем others, учитывая categoryOrder
   const groupedCategories = groupByStable(otherLinks, categoryOrder);
 
-  const renderFavoriteLinks = () => {
-    return favoriteLinks.map((link, index) => (
-      <Draggable
-        key={`fav-${index}`}
-        draggableId={`fav-${index}`}
-        index={index}
-      >
-        {(provided) => (
-          <div
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            style={provided.draggableProps.style}
-          >
-            <LinkBlock
-              title={link.title}
-              url={link.url}
-              customIcon={link.customIcon}
-              isRemoveMode={isRemoveMode}
-              onRemove={() => {
-                const gIndex = links.indexOf(link);
-                if (gIndex >= 0) handleRemoveLink(gIndex);
-              }}
-              onEdit={() => {
-                const gIndex = links.indexOf(link);
-                if (gIndex >= 0) handleEditLink(gIndex);
-              }}
-            />
-          </div>
-        )}
-      </Draggable>
-    ));
-  };
+  // Если user выбрал не "All", показываем только эту категорию
+  let visibleCategories;
+  if (selectedCategory === 'All') {
+    visibleCategories = groupedCategories;
+  } else {
+    // Ищем в groupedCategories
+    const singleCat = groupedCategories.find((c) => c.name === selectedCategory);
+    if (singleCat) {
+      visibleCategories = [singleCat];
+    } else {
+      visibleCategories = [];
+    }
+  }
 
+  // Рендер категорий
   const renderCategories = () => {
-    return groupedCategories.map((catBlock) => {
+    return visibleCategories.map((catBlock) => {
       const catName = catBlock.name;
       const firstThree = catBlock.items.slice(0, 3);
       const hasMore = catBlock.items.length > 3;
@@ -305,7 +274,10 @@ function App() {
                         ref={provDrag.innerRef}
                         {...provDrag.draggableProps}
                         {...provDrag.dragHandleProps}
-                        style={provDrag.draggableProps.style}
+                        style={{
+                          ...provDrag.draggableProps.style,
+                          transition: 'all 0.2s ease',
+                        }}
                       >
                         <LinkBlock
                           title={link.title}
@@ -325,6 +297,7 @@ function App() {
                     )}
                   </Draggable>
                 ))}
+
                 {hasMore && (
                   <div
                     className="link-block-wrapper folder-block"
@@ -347,21 +320,13 @@ function App() {
     });
   };
 
-  // Папка (модальное окно)
+  // Папка
   const openFolderItems = folderOpenCat
     ? groupedCategories.find((c) => c.name === folderOpenCat)?.items
     : null;
 
-  // Список категорий + All
-  const allCategories = [
-    'All',
-    ...new Set(
-      links
-        .filter((l) => l.category !== 'favorite')
-        .map((l) => l.category)
-        .filter(Boolean)
-    ),
-  ];
+  // Список категорий
+  const catSelectList = ['All', ...categoryOrder];
 
   return (
     <div className={`App ${theme}`}>
@@ -385,6 +350,8 @@ function App() {
         onAddLink={handleAddLink}
         toggleTheme={toggleTheme}
         toggleRemoveMode={toggleRemoveMode}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
       />
 
       <input
@@ -394,6 +361,31 @@ function App() {
         accept="image/*"
         onChange={handleSelectFile}
       />
+
+      {/* Кнопка-иконка (справа сверху) для выбора категории */}
+      <div className="category-icon-button" onClick={() => setShowCategoryOptions((s) => !s)}>
+        <span className="cat-icon">
+          <FiList />
+        </span>
+        <span className="cat-tooltip">Категория</span>
+        {/* Кастомный список опций */}
+        {showCategoryOptions && (
+          <div className="custom-cat-options">
+            {catSelectList.map((cat) => (
+              <div
+                key={cat}
+                className={`cat-option ${selectedCategory === cat ? 'active' : ''}`}
+                onClick={() => {
+                  setSelectedCategory(cat);
+                  setShowCategoryOptions(false);
+                }}
+              >
+                {cat}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
         <main>
@@ -406,39 +398,52 @@ function App() {
               >
                 <h2>Избранные</h2>
                 <div className="favorites-links">
-                  {renderFavoriteLinks()}
+                  {favoriteLinks.map((link, index) => (
+                    <Draggable
+                      key={`fav-${index}`}
+                      draggableId={`fav-${index}`}
+                      index={index}
+                    >
+                      {(provProvided) => (
+                        <div
+                          ref={provProvided.innerRef}
+                          {...provProvided.draggableProps}
+                          {...provProvided.dragHandleProps}
+                          style={provProvided.draggableProps.style}
+                        >
+                          <LinkBlock
+                            title={link.title}
+                            url={link.url}
+                            customIcon={link.customIcon}
+                            isRemoveMode={isRemoveMode}
+                            onRemove={() => {
+                              const gIndex = links.indexOf(link);
+                              if (gIndex >= 0) handleRemoveLink(gIndex);
+                            }}
+                            onEdit={() => {
+                              const gIndex = links.indexOf(link);
+                              if (gIndex >= 0) handleEditLink(gIndex);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
                   {provided.placeholder}
                 </div>
               </section>
             )}
           </Droppable>
 
-          <section className="sorting-category-panel">
-            <div className="sort-block">
-              <h4>Сортировка</h4>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                <option value="manual">Ручная (Drag & Drop)</option>
-                <option value="alphabetical">По алфавиту</option>
-                <option value="date">По дате (новые сверху)</option>
-              </select>
-            </div>
-
-            <div className="category-block">
-              <h4>Категория</h4>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {allCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </section>
-
-          <section className="categories-grid">
+          {/* Если не "All", показываем только 1 категорию => центрируем */}
+          <section
+            className="categories-grid"
+            style={
+              selectedCategory !== 'All'
+                ? { justifyContent: 'center' }
+                : undefined
+            }
+          >
             {renderCategories()}
           </section>
 
