@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiMoreHorizontal, FiList } from 'react-icons/fi';
 import './App.css';
-
 import LinkBlock from './components/LinkBlock';
 import SidebarMenu from './components/SidebarMenu';
 import WeatherWidget from './components/WeatherWidget';
@@ -9,7 +8,6 @@ import ClockWidget from './components/ClockWidget';
 import TodoWidget from './components/widgets/TodoWidget';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
-// Стабильный порядок категорий
 function groupByStable(array, categoryOrder) {
   const grouped = {};
   array.forEach((item) => {
@@ -22,10 +20,9 @@ function groupByStable(array, categoryOrder) {
 
   const result = categoryOrder.map((catName) => ({
     name: catName,
-    items: grouped[catName] || []
+    items: grouped[catName] || [],
   }));
 
-  // Добавим те, которых нет в categoryOrder
   Object.keys(grouped).forEach((catName) => {
     if (!categoryOrder.includes(catName)) {
       result.push({ name: catName, items: grouped[catName] });
@@ -36,11 +33,13 @@ function groupByStable(array, categoryOrder) {
 }
 
 function App() {
-  const [theme, setTheme] = useState('light');
+  const initialTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  const [theme, setTheme] = useState(initialTheme);
+
   const [links, setLinks] = useState([]);
   const [isRemoveMode, setIsRemoveMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [sortBy, setSortBy] = useState('manual');
+  const [sortBy] = useState('manual');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const [editIndex, setEditIndex] = useState(null);
@@ -49,13 +48,9 @@ function App() {
   const [folderOpenCat, setFolderOpenCat] = useState(null);
   const [categoryOrder, setCategoryOrder] = useState([]);
 
-  // Показывать ли список категорий (иконка-кнопка справа)
   const [showCategoryOptions, setShowCategoryOptions] = useState(false);
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem('theme');
-    if (storedTheme) setTheme(storedTheme);
-
     const storedLinks = localStorage.getItem('userLinks');
     if (storedLinks) {
       setLinks(JSON.parse(storedLinks));
@@ -80,19 +75,27 @@ function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
     localStorage.setItem('userLinks', JSON.stringify(links));
   }, [links]);
 
+  const toggleTheme = () => {
+    if (theme === 'dark') {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+      localStorage.setItem('theme', 'light');
+      setTheme('light');
+    } else {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+      setTheme('dark');
+    }
+  };
+
   useEffect(() => {
-    document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(theme);
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Заполняем categoryOrder
   useEffect(() => {
     const cats = links
       .filter((l) => l.category && l.category !== 'favorite')
@@ -106,10 +109,6 @@ function App() {
       return merged;
     });
   }, [links]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
 
   const toggleRemoveMode = () => {
     setIsRemoveMode((prev) => !prev);
@@ -157,7 +156,6 @@ function App() {
     reader.readAsDataURL(file);
   };
 
-  // Фильтруем + сортируем
   let filteredLinks;
   if (selectedCategory === 'All') {
     filteredLinks = links;
@@ -176,12 +174,9 @@ function App() {
     sortedLinks.sort((a, b) => b.createdAt - a.createdAt);
   }
 
-  // DnD
   const onDragEnd = (result) => {
     if (!result.destination) return;
     if (sortBy !== 'manual') return;
-
-    // Не даём перекидывать между droppables
     if (result.source.droppableId !== result.destination.droppableId) return;
 
     if (result.source.droppableId === 'favorites-droppable') {
@@ -203,7 +198,6 @@ function App() {
     });
   };
 
-  // Переставляем только первые 3 в категории
   const reorderCategory = (catName, from, to) => {
     setLinks((prev) => {
       const newArr = [...prev];
@@ -213,7 +207,6 @@ function App() {
 
       const [removed] = firstThree.splice(from, 1);
       firstThree.splice(to, 0, removed);
-
       const rest = catLinks.slice(3);
       const finalCat = [...firstThree, ...rest];
       const notCat = newArr.filter((l) => l.category !== catName);
@@ -221,48 +214,30 @@ function App() {
     });
   };
 
-  // Разделяем favorite vs. others
   const favoriteLinks = sortedLinks.filter((l) => l.category === 'favorite');
   const otherLinks = sortedLinks.filter((l) => l.category !== 'favorite');
 
-  // Группируем others, учитывая categoryOrder
   const groupedCategories = groupByStable(otherLinks, categoryOrder);
 
-  // Если user выбрал не "All", показываем только эту категорию
   let visibleCategories;
   if (selectedCategory === 'All') {
     visibleCategories = groupedCategories;
   } else {
-    // Ищем в groupedCategories
     const singleCat = groupedCategories.find((c) => c.name === selectedCategory);
-    if (singleCat) {
-      visibleCategories = [singleCat];
-    } else {
-      visibleCategories = [];
-    }
+    visibleCategories = singleCat ? [singleCat] : [];
   }
 
-  // Рендер категорий
   const renderCategories = () => {
     return visibleCategories.map((catBlock) => {
       const catName = catBlock.name;
       const firstThree = catBlock.items.slice(0, 3);
       const hasMore = catBlock.items.length > 3;
-
       return (
-        <Droppable
-          key={catName}
-          droppableId={`cat:${catName}`}
-          direction="vertical"
-        >
+        <Droppable key={catName} droppableId={`cat:${catName}`} direction="vertical">
           {(provided) => (
             <div className="category-section">
               <h3>{catName}</h3>
-              <div
-                className="category-links"
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-              >
+              <div className="category-links" ref={provided.innerRef} {...provided.droppableProps}>
                 {firstThree.map((link, idx) => (
                   <Draggable
                     key={`cat-${catName}-${idx}`}
@@ -297,7 +272,6 @@ function App() {
                     )}
                   </Draggable>
                 ))}
-
                 {hasMore && (
                   <div
                     className="link-block-wrapper folder-block"
@@ -320,16 +294,14 @@ function App() {
     });
   };
 
-  // Папка
   const openFolderItems = folderOpenCat
     ? groupedCategories.find((c) => c.name === folderOpenCat)?.items
     : null;
 
-  // Список категорий
   const catSelectList = ['All', ...categoryOrder];
 
   return (
-    <div className={`App ${theme}`}>
+    <div className="App">
       <div>
         <input
           type="checkbox"
@@ -349,9 +321,8 @@ function App() {
         onClose={handleMenuToggle}
         onAddLink={handleAddLink}
         toggleTheme={toggleTheme}
+        currentTheme={theme}
         toggleRemoveMode={toggleRemoveMode}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
       />
 
       <input
@@ -362,13 +333,14 @@ function App() {
         onChange={handleSelectFile}
       />
 
-      {/* Кнопка-иконка (справа сверху) для выбора категории */}
-      <div className="category-icon-button" onClick={() => setShowCategoryOptions((s) => !s)}>
+      <div
+        className="category-icon-button"
+        onClick={() => setShowCategoryOptions((s) => !s)}
+      >
         <span className="cat-icon">
           <FiList />
         </span>
         <span className="cat-tooltip">Категория</span>
-        {/* Кастомный список опций */}
         {showCategoryOptions && (
           <div className="custom-cat-options">
             {catSelectList.map((cat) => (
@@ -435,14 +407,9 @@ function App() {
             )}
           </Droppable>
 
-          {/* Если не "All", показываем только 1 категорию => центрируем */}
           <section
             className="categories-grid"
-            style={
-              selectedCategory !== 'All'
-                ? { justifyContent: 'center' }
-                : undefined
-            }
+            style={selectedCategory !== 'All' ? { justifyContent: 'center' } : undefined}
           >
             {renderCategories()}
           </section>
@@ -457,7 +424,10 @@ function App() {
 
       {folderOpenCat && (
         <div className="folder-modal-overlay" onClick={() => setFolderOpenCat(null)}>
-          <div className="folder-modal-content" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="folder-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button className="folder-close" onClick={() => setFolderOpenCat(null)}>
               ×
             </button>

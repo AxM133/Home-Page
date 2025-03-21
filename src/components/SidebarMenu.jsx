@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import LinkForm from './LinkForm';
 import './SidebarMenu.css';
 
@@ -7,27 +7,15 @@ function SidebarMenu({
   onClose,
   onAddLink,
   toggleTheme,
-  toggleRemoveMode
+  toggleRemoveMode,
+  currentTheme
 }) {
   const [showForm, setShowForm] = useState(false);
-  const [isDarkChecked, setIsDarkChecked] = useState(false);
 
-  useEffect(() => {
-    // Считываем сохранённое состояние "isDark" из localStorage
-    const storedIsDark = localStorage.getItem('isDark');
-    if (storedIsDark === 'true') {
-      setIsDarkChecked(true);
-    } else {
-      setIsDarkChecked(false);
-    }
-  }, []);
+  const isDarkChecked = currentTheme === 'dark';
 
-  // При изменении переключателя
-  const handleThemeSwitch = (e) => {
-    const checked = e.target.checked;
-    setIsDarkChecked(checked);
-    localStorage.setItem('isDark', checked ? 'true' : 'false');
-    toggleTheme(); 
+  const handleThemeSwitch = () => {
+    toggleTheme();
   };
 
   const handleAddBlockClick = () => {
@@ -47,9 +35,8 @@ function SidebarMenu({
 
       <button onClick={toggleRemoveMode}>Изменение блока</button>
 
-      {/* Переключатель темы (switch) внизу */}
       <label className="switch theme-switch">
-        <input 
+        <input
           type="checkbox"
           checked={isDarkChecked}
           onChange={handleThemeSwitch}
