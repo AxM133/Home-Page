@@ -20,7 +20,7 @@
 }
 
 .sidebar-menu h2 {
-  margin: 0.7rem 0px 1.5rem 11.5rem;
+  margin: 1.9rem 0px 3rem 11.5rem;
   font-size: 1.8rem;
 }
 
@@ -54,7 +54,7 @@
 }
 
 .add-form-wrapper {
-  margin: 1rem 0.4rem;
+  margin: 1rem 0.2rem;
   padding: 0.6rem;
   background-color: var(--widget-bg);
   border-radius: 6px;
@@ -137,3 +137,4 @@ input:checked + .slider:before {
   background: #303136;
   box-shadow: inset -3px -2px 5px -2px #8983f7, inset -10px -4px 0 0 #a3dafb;
 }
+

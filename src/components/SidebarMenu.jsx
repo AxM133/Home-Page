@@ -8,10 +8,10 @@ function SidebarMenu({
   onAddLink,
   toggleTheme,
   toggleRemoveMode,
-  currentTheme
+  currentTheme,
+  availableCategories
 }) {
   const [showForm, setShowForm] = useState(false);
-
   const isDarkChecked = currentTheme === 'dark';
 
   const handleThemeSwitch = () => {
@@ -29,7 +29,7 @@ function SidebarMenu({
       <button onClick={handleAddBlockClick}>Добавить блок</button>
       {showForm && (
         <div className="add-form-wrapper">
-          <LinkForm onAddLink={onAddLink} />
+          <LinkForm onAddLink={onAddLink} availableCategories={availableCategories} />
         </div>
       )}
 

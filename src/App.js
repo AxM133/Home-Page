@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiMoreHorizontal, FiList } from 'react-icons/fi';
+import { FiMoreHorizontal, FiList, FiMenu } from 'react-icons/fi';
 import './App.css';
 import LinkBlock from './components/LinkBlock';
 import SidebarMenu from './components/SidebarMenu';
@@ -96,18 +96,13 @@ function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // Собираем уникальные категории, исключая 'favorite'
   useEffect(() => {
     const cats = links
       .filter((l) => l.category && l.category !== 'favorite')
       .map((l) => l.category);
-    const uniqueCats = [...new Set(cats)];
-    setCategoryOrder((prev) => {
-      const merged = [...prev];
-      uniqueCats.forEach((c) => {
-        if (!merged.includes(c)) merged.push(c);
-      });
-      return merged;
-    });
+    const uniqueCats = Array.from(new Set(cats));
+    setCategoryOrder(uniqueCats);
   }, [links]);
 
   const toggleRemoveMode = () => {
@@ -214,9 +209,11 @@ function App() {
     });
   };
 
+  // Ссылки категории favorite отдельно, остальные в otherLinks
   const favoriteLinks = sortedLinks.filter((l) => l.category === 'favorite');
   const otherLinks = sortedLinks.filter((l) => l.category !== 'favorite');
 
+  // Группируем только "otherLinks"
   const groupedCategories = groupByStable(otherLinks, categoryOrder);
 
   let visibleCategories;
@@ -294,27 +291,23 @@ function App() {
     });
   };
 
+  // Если открыта папка (Показать ещё)
   const openFolderItems = folderOpenCat
     ? groupedCategories.find((c) => c.name === folderOpenCat)?.items
     : null;
 
+  // Для иконки "категория" справа — список "All" + все остальные (без favorite)
   const catSelectList = ['All', ...categoryOrder];
 
   return (
     <div className="App">
-      <div>
-        <input
-          type="checkbox"
-          id="checkbox"
-          className="menu-btn"
-          onClick={handleMenuToggle}
-        />
-        <label htmlFor="checkbox" className="toggle">
-          <div className="bars" id="bar1" />
-          <div className="bars" id="bar2" />
-          <div className="bars" id="bar3" />
-        </label>
-      </div>
+      <button
+        className={`menu-toggle-button ${isMenuOpen ? 'active' : ''}`}
+        onClick={handleMenuToggle}
+      >
+        <FiMenu size={18} />
+        <span>Меню</span>
+      </button>
 
       <SidebarMenu
         isOpen={isMenuOpen}
@@ -323,6 +316,7 @@ function App() {
         toggleTheme={toggleTheme}
         currentTheme={theme}
         toggleRemoveMode={toggleRemoveMode}
+        availableCategories={categoryOrder}
       />
 
       <input
@@ -333,6 +327,7 @@ function App() {
         onChange={handleSelectFile}
       />
 
+      {/* Кнопка "Категория" справа */}
       <div
         className="category-icon-button"
         onClick={() => setShowCategoryOptions((s) => !s)}
@@ -361,6 +356,7 @@ function App() {
 
       <DragDropContext onDragEnd={onDragEnd}>
         <main>
+          {/* Блок "Избранные" */}
           <Droppable droppableId="favorites-droppable" direction="horizontal">
             {(provided) => (
               <section
@@ -407,6 +403,7 @@ function App() {
             )}
           </Droppable>
 
+          {/* Остальные категории */}
           <section
             className="categories-grid"
             style={selectedCategory !== 'All' ? { justifyContent: 'center' } : undefined}
@@ -414,6 +411,7 @@ function App() {
             {renderCategories()}
           </section>
 
+          {/* Виджеты */}
           <section className="widgets-section">
             <WeatherWidget theme={theme} />
             <ClockWidget />
@@ -422,6 +420,7 @@ function App() {
         </main>
       </DragDropContext>
 
+      {/* Модальное окно, если нажали "Показать ещё" */}
       {folderOpenCat && (
         <div className="folder-modal-overlay" onClick={() => setFolderOpenCat(null)}>
           <div

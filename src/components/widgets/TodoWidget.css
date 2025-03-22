@@ -1,3 +1,36 @@
+/* Добавляем стили для кастомного скроллбара в .todo-list */
+.todo-list {
+  flex: 1;            /* занимает свободное место в .modal-content */
+  min-height: 0;      /* важно, чтобы flex-элемент мог сжиматься */
+  margin-top: 1rem;   /* небольшой отступ сверху */
+  overflow-y: auto;   /* включаем вертикальный скролл */
+  
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  /* Кастомный скроллбар (WebKit) */
+  scrollbar-width: thin; /* для Firefox */
+  scrollbar-color: var(--accent-color) var(--widget-bg);
+}
+
+/* Для браузеров на основе WebKit (Chrome, Safari) */
+.todo-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.todo-list::-webkit-scrollbar-track {
+  background: var(--widget-bg);
+  border-radius: 4px;
+}
+
+.todo-list::-webkit-scrollbar-thumb {
+  background-color: var(--accent-color);
+  border-radius: 4px;
+  border: 2px solid var(--widget-bg);
+}
+
+/* Остальные стили TodoWidget.css остаются без изменений */
 .todo-widget {
   background-color: var(--widget-bg);
   width: 250px;
@@ -37,10 +70,10 @@
   background-color: var(--block-bg);
   color: var(--block-text);
   width: 500px;
-  min-height: 450px;
+  max-height: 80vh; /* 80% от высоты окна */
   border-radius: 10px;
   padding: 1.5rem;
-  display: flex;
+  display: flex;         /* flex-раскладка */
   flex-direction: column;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
   position: relative;
@@ -119,13 +152,6 @@
 }
 
 /* Список задач */
-.todo-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  overflow-y: auto;
-}
-
 .todo-item {
   display: flex;
   justify-content: space-between;

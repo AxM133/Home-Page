@@ -2,6 +2,21 @@ import React, { useState, useEffect } from 'react';
 import './TodoWidget.css';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
+function getTaskWord(count) {
+  const lastTwo = count % 100;
+  const lastOne = count % 10;
+
+  if (lastTwo >= 11 && lastTwo <= 14) {
+    return 'задач';
+  } else if (lastOne === 1) {
+    return 'задача';
+  } else if (lastOne >= 2 && lastOne <= 4) {
+    return 'задачи';
+  } else {
+    return 'задач';
+  }
+}
+
 function TodoWidget({ theme }) {
   const [tasks, setTasks] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -72,14 +87,21 @@ function TodoWidget({ theme }) {
       {/* Виджет TODO */}
       <div className="todo-widget widget" onClick={handleWidgetClick}>
         <div className="todo-small-title">TODO</div>
-        <div>У вас {tasks.length} задач</div>
+        <div>
+          У вас {tasks.length} {getTaskWord(tasks.length)}
+        </div>
       </div>
 
       {/* Модальное окно */}
       {isModalOpen && (
-        <div className={`modal-overlay ${theme === 'dark' ? 'dark-overlay' : ''}`} onClick={closeModal}>
+        <div
+          className={`modal-overlay ${theme === 'dark' ? 'dark-overlay' : ''}`}
+          onClick={closeModal}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal" onClick={closeModal}>×</button>
+            <button className="close-modal" onClick={closeModal}>
+              ×
+            </button>
             <h2 className="modal-title">Список дел</h2>
 
             {/* Поля ввода */}
@@ -98,7 +120,9 @@ function TodoWidget({ theme }) {
                 value={descriptionInput}
                 onChange={(e) => setDescriptionInput(e.target.value)}
               />
-              <button className="add-task-btn" onClick={handleAddTask}>Добавить</button>
+              <button className="add-task-btn" onClick={handleAddTask}>
+                Добавить
+              </button>
             </div>
 
             {/* Список задач */}

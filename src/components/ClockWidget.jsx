@@ -9,20 +9,22 @@ function ClockWidget() {
     return () => clearInterval(timer);
   }, []);
 
-  const hours = String(time.getHours()).padStart(2, '0');
-  const minutes = String(time.getMinutes()).padStart(2, '0');
-  const day = String(time.getDate()).padStart(2, '0');
-  const month = String(time.getMonth() + 1).padStart(2, '0');
-  const year = time.getFullYear();
+  const timeStr = time.toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  const dateStr = time.toLocaleDateString('ru-RU', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
 
   return (
     <div className="clock-widget widget">
-      <div className="clock-time">
-        {hours}:{minutes}
-      </div>
-      <div className="clock-date">
-        {day}.{month}.{year}
-      </div>
+      <div className="clock-time">{timeStr}</div>
+      <div className="clock-date">{dateStr}</div>
     </div>
   );
 }
